@@ -1,0 +1,76 @@
+<template>
+  <div>
+    <el-dialog :title="info.title" :visible.sync="info.show">
+      <el-form :model="form">
+        <el-form-item label="规格名称" :label-width="formLabelWidth">
+          <el-input v-model="form.specsname"></el-input>
+        </el-form-item>
+
+        <el-form-item
+          v-for="(item, index) in attrArr"
+          :key="index"
+          label="规格属性"
+          :label-width="formLabelWidth"
+        >
+          <el-col :span="16">
+            <el-input v-model="item.attrs"></el-input>
+          </el-col>
+
+          <el-button type="primary" v-if="index == 0" @click="addAttr"
+            >新增规格属性</el-button
+          >
+
+          <el-button type="danger" v-else @click="delAttr(index)"
+            >删除</el-button
+          >
+        </el-form-item>
+
+        <el-form-item label="状态" :label-width="formLabelWidth">
+          <el-switch
+            v-model="form.status"
+            active-color="blue"
+            inactive-color="grey"
+            :active-value="1"
+            :inactive-value="2"
+          >
+          </el-switch>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="confirm" v-if="info.isAdd"
+          >确 定</el-button
+        >
+        <el-button type="primary" @click="update" v-else>修 改</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+export default {
+  props: ["info"],
+  data() {
+    return {
+        formLabelWidth:"120px",
+      attrArr: [{ value: "" }],
+      form: {
+        specsname: "",
+        attrs: "",
+        atatus: 1
+      }
+    };
+  },
+  methods: {
+    //添加规格属性
+    addAttr() {
+      this.attrArr.push({ value: "" });
+    },
+    delAttr(index) {
+      this.attrArr.splice(index, 1);
+    }
+  }
+};
+</script>
+
+<style></style>
