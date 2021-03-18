@@ -9,6 +9,8 @@ import menu from './modules/menu'
 import role from './modules/role';
 import manager from './modules/manager';
 import cate from './modules/cate';
+import spec from './modules/spec';
+import goods from './modules/goods';
 
 const store = new Vuex.Store({
     state,
@@ -20,6 +22,8 @@ const store = new Vuex.Store({
         role,
         manager,
         cate,
+        spec,
+        goods
     }
 })
 

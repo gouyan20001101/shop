@@ -13,7 +13,7 @@
           :label-width="formLabelWidth"
         >
           <el-col :span="16">
-            <el-input v-model="item.attrs"></el-input>
+            <el-input v-model="item.value"></el-input>
           </el-col>
 
           <el-button type="primary" v-if="index == 0" @click="addAttr"
@@ -48,11 +48,14 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from "vuex";
+import { successAlert, warningAlert } from "../../../utils/alert";
+import { addSpec, oneSpec,updateSpec } from "../../../utils/request";
 export default {
   props: ["info"],
   data() {
     return {
-        formLabelWidth:"120px",
+      formLabelWidth: "120px",
       attrArr: [{ value: "" }],
       form: {
         specsname: "",
@@ -61,15 +64,75 @@ export default {
       }
     };
   },
+  // computed: {
+  //   ...mapGetters({
+  //     specList: "spec/specList"
+  //   })
+  // },
+  
   methods: {
+    ...mapActions({
+      requestCount: "spec/countActions",
+      requestSpecList: "spec/specListAtions"
+    }),
     //添加规格属性
     addAttr() {
       this.attrArr.push({ value: "" });
     },
     delAttr(index) {
       this.attrArr.splice(index, 1);
+    },
+    cancel() {
+      this.info.show = false;
+      this.form = {
+        specsname: "",
+        attrs: "",
+        status: 1
+      };
+      this.attrArr = [{ value: "" }];
+    },
+    confirm() {
+      if (this.attrArr.some(item => item.value === "")) {
+        warningAlert("规格属性值不能为空");
+        return;
+      }
+      // console.log(this.form);
+      this.form.attrs = this.attrArr.map(item => item.value).join(",");
+
+      addSpec(this.form).then(res => {
+        successAlert(res.data.msg);
+        this.cancel();
+        this.requestCount();
+        this.requestSpecList();
+      });
+    },
+    getDetail(id) {
+      oneSpec({ id }).then(res => {
+        this.form = res.data.list[0];
+        this.form.id=id;
+        var arr = this.form.attrs.split(',');
+        this.attrArr = []
+        for(let i in arr){
+          this.attrArr.push({value:arr[i]});
+        }
+        
+      });
+    },
+    update() {
+       if (this.attrArr.some(item => item.value === "")) {
+        warningAlert("规格属性值不能为空");
+        return;
+      }
+      // console.log(this.form);
+      this.form.attrs = this.attrArr.map(item => item.value).join(",");
+      updateSpec(this.form).then(res=>{
+        successAlert(res.data.msg);
+        this.cancel();
+        this.requestSpecList();
+      });
     }
-  }
+  },
+ 
 };
 </script>
 

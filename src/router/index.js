@@ -13,6 +13,8 @@ const role = ()=>import('../pages/role/role')
 const manager = ()=>import('../pages/manager/manager')
 const cate = ()=>import('../pages/cate/cate')
 const spec = ()=>import('../pages/spec/spec')
+const goods = ()=>import('../pages/goods/goods')
+
 
 
 
@@ -63,6 +65,11 @@ export default new Router({
           path:"spec",
           name:"商品规格",
           component:spec
+        },
+        {
+          path:"goods",
+          name:"商品管理",
+          component:goods
         },
         {
           path:"",

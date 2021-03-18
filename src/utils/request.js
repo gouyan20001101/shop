@@ -3,6 +3,7 @@ import qs from "qs"
 // import { Store } from "vuex";
 import {errorAlert} from './alert';
 import store from '../store/index';
+import router from '../router';
 
 //设置基础路径
 var baseUrl = '/api'
@@ -22,6 +23,10 @@ axios.interceptors.request.use(config=>{
 axios.interceptors.response.use(res=>{
     console.group('本次响应路径为'+res.config.url)
     if(res.data.code !== 200){
+        if(res.data.code == 403){
+            router.push('/login');
+            return
+        }
         errorAlert(res.data.msg)
         return;
     }
@@ -237,6 +242,60 @@ export const delCate = (data)=>{
     return axios({
         method:"post",
         url:baseUrl+'/api/catedelete',
+        data:qs.stringify(data)
+    })
+}
+
+
+//添加商品规格请求
+export const addSpec = (data)=>{
+    return axios({
+        method:"post",
+        url:baseUrl+'/api/specsadd',
+        data:qs.stringify(data)
+    })
+
+}
+
+//获取商品规格列表请求
+export const getSpec = (params)=>{
+    return axios({
+        method:"get",
+        url:baseUrl+'/api/specslist',
+        params
+    })
+}
+//获取规格属性总数
+export const specCount = ()=>{
+    return axios({
+        method:"get",
+        url:baseUrl+'/api/specscount',
+        
+    })
+}
+//编辑规格属性请求
+export const oneSpec = (data)=>{
+    return axios({
+        method:"post",
+        url:baseUrl+'/api/specsinfo',
+        data:qs.stringify(data)
+    })
+}
+
+// 发起修改请求
+export const updateSpec = (data)=>{
+    return axios({
+        method:"post",
+        url:baseUrl+'/api/specsedit',
+        data:qs.stringify(data)
+    })
+}
+
+//删除商品规格请求
+export const delSpec = (data)=>{
+    return axios({
+        method:"post",
+        url:baseUrl+'/api/specsdelete',
         data:qs.stringify(data)
     })
 }
