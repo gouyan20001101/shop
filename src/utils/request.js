@@ -300,3 +300,63 @@ export const delSpec = (data)=>{
     })
 }
 
+//添加商品请求
+export const addGoods = (data)=>{
+    var form = new FormData()
+    for(let i in data){
+        form.append(i,data[i])
+    }
+    return axios({
+        method:"post",
+        url:baseUrl+'/api/goodsadd',
+        data:form
+    })
+}
+
+//商品总数
+export const goodsCount = ()=>{
+    return axios({
+        method:"get",
+        url:baseUrl+'/api/goodscount',
+        
+    })
+}
+
+//商品列表
+export const getGoods = (params)=>{
+    return axios({
+        method:"get",
+        url:baseUrl+'/api/goodslist',
+        params
+    })
+}
+
+//商品详情
+export const oneGoods = (params)=>{
+    return axios({
+        method:"get",
+        url:baseUrl+'/api/goodsinfo',
+        params
+    })
+}
+//商品修改
+export const updateGoods = (data)=>{
+    var form = new FormData()
+    for(let i in data){
+        form.append(i,data[i])
+    }
+    return axios({
+        method:"post",
+        url:baseUrl+'/api/goodsedit',
+        data:form
+    })
+}
+
+//商品删除
+export const delGoods = (data)=>{
+    return axios({
+        method:"post",
+        url:baseUrl+'/api/goodsdelete',
+        data:qs.stringify(data)
+    })
+}

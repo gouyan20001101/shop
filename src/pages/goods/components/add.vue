@@ -3,7 +3,7 @@
     <el-dialog :title="info.title" :visible.sync="info.show" @opened="opened">
       <el-form :model="form">
         <el-form-item label="一级分类" :label-width="formLabelWidth">
-          <el-select v-model="form.first_cateid" @change="changeCate">
+          <el-select v-model="form.first_cateid" @change="changeCate(false)">
             <el-option label="--请选择--" disabled value=""></el-option>
             <el-option
               v-for="item in cateList"
@@ -53,7 +53,7 @@
         </el-form-item>
 
         <el-form-item label="商品规格" :label-width="formLabelWidth">
-          <el-select v-model="form.specsid" @change="changeSpec">
+          <el-select v-model="form.specsid" @change="changeSpec(false)">
             <el-option label="--请选择--" disabled value=""></el-option>
             <el-option
               v-for="item in specList"
@@ -117,95 +117,147 @@
 </template>
 
 <script>
-import E from 'wangeditor'
-import {mapActions,mapGetters} from 'vuex';
+import E from "wangeditor";
+import { mapActions, mapGetters } from "vuex";
+import { addGoods, oneGoods, updateGoods } from "../../../utils/request";
+import { successAlert } from "../../../utils/alert";
 export default {
   props: ["info"],
   data() {
     return {
       imageUrl: "",
       formLabelWidth: "120px",
-      secondCate:[],
-      secondSpec:[],
-      editor:'',
+      secondCate: [],
+      secondSpec: [],
+      editor: "",
       form: {
-        first_cateid : "",
-        second_cateid : "",
-        goodsname :"",
-        price : "",
-        market_price : "",
-        img : "",
-        description : "",
-        specsid : "",
-        specsattr : [],
-        isnew : 1,
-        ishot : 1,
-        status : 1
+        first_cateid: "",
+        second_cateid: "",
+        goodsname: "",
+        price: "",
+        market_price: "",
+        img: "",
+        description: "",
+        specsid: "",
+        specsattr: [],
+        isnew: 1,
+        ishot: 1,
+        status: 1
       }
     };
   },
-  computed:{
-      ...mapGetters({
-          "cateList":"cate/cateList",
-          "specList":"spec/specList"
-      })
+  computed: {
+    ...mapGetters({
+      cateList: "cate/cateList",
+      specList: "spec/specList"
+    })
   },
-  methods:{
-       //改变图片时获取图片信息
-    changeImg(e){
+  methods: {
+    //改变图片时获取图片信息
+    changeImg(e) {
       //处理文件大小
-      if(e.size > 2*1024*1024){
-        warningAlert('文件大小不能超过2M')
-        return
+      if (e.size > 2 * 1024 * 1024) {
+        warningAlert("文件大小不能超过2M");
+        return;
       }
 
       //处理文件后缀
-      var ext = ['.jpg','png','jpeg','gif'];
-      var extName = e.name.slice(e.name.lastIndexOf('.'));
-      if(!ext.some(item=>item==extName)){
-        warningAlert('上传文件不正确')
-        return
+      var ext = [".jpg", "png", "jpeg", "gif"];
+      var extName = e.name.slice(e.name.lastIndexOf("."));
+      if (!ext.some(item => item == extName)) {
+        warningAlert("上传文件不正确");
+        return;
       }
 
       //上传正确的文件
-      this.imageUrl = URL.createObjectURL(e.raw)
-      this.form.img = e.raw
+      this.imageUrl = URL.createObjectURL(e.raw);
+      this.form.img = e.raw;
     },
 
     ...mapActions({
-        "cateRequestList":"cate/cateListActions",
-        "specRequestList":"spec/specListAtions"
+      cateRequestList: "cate/cateListActions",
+      specRequestList: "spec/specListAtions",
+      requestCount: "goods/countActions",
+      requestGoodsList: "goods/goodsListActions"
     }),
-    changeCate(){
-        this.form.second_cateid = '';
-        var index = this.cateList.findIndex(item=>item.id==this.form.first_cateid)
-        this.secondCate = this.cateList[index].children
+    changeCate(bool) {
+      if (!bool) {
+        this.form.second_cateid = "";
+      }
+
+      var index = this.cateList.findIndex(
+        item => item.id == this.form.first_cateid
+      );
+      this.secondCate = this.cateList[index].children;
     },
-    changeSpec(){
+    changeSpec(bool) {
+      if (!bool) {
         this.form.specsattr = [];
-        var index = this.specList.findIndex(item=>item.id==this.form.specsid)
-        this.secondSpec = this.specList[index].attrs
-    },
-    opened(){
-        this.editor = new E('#div1')
-        this.editor.create()
-        this.editor.txt.html(this.form.description)
-    },
-    cancel(){
+      }
 
+      var index = this.specList.findIndex(item => item.id == this.form.specsid);
+      this.secondSpec = this.specList[index].attrs;
     },
-    confirm(){
-
+    opened() {
+      this.editor = new E("#div1");
+      this.editor.create();
+      this.editor.txt.html(this.form.description);
+    },
+    cancel() {
+      this.info.show = false;
+      this.form = {
+        first_cateid: "",
+        second_cateid: "",
+        goodsname: "",
+        price: "",
+        market_price: "",
+        img: "",
+        description: "",
+        specsid: "",
+        specsattr: [],
+        isnew: 1,
+        ishot: 1,
+        status: 1
+      };
+      this.imageUrl = "";
+    },
+    confirm() {
+      //需要处理描述信息
+      this.form.description = this.editor.txt.html();
+      addGoods(this.form).then(res => {
+        successAlert(res.data.msg);
+        this.cancel();
+        this.cateRequestList();
+        this.requestCount();
+        this.requestGoodsList();
+      });
+    },
+    getDetail(id) {
+      oneGoods({ id }).then(res => {
+        this.form = res.data.list;
+        this.form.id = id;
+        this.changeCate(true);
+        this.imageUrl = this.$preImg + this.form.img;
+        this.changeSpec(true);
+        this.form.specsattr = this.form.specsattr.split(',')
+      });
+    },
+    update(){
+      //需要处理描述信息
+      this.form.description = this.editor.txt.html();
+      updateGoods(this.form).then(res=>{
+        successAlert('修改成功')
+        this.cancel()
+      })
     }
   },
 
-  mounted(){
-      //发起一级分类请求
-      this.cateRequestList()
-      //发起规格属性请求
-      this.specRequestList()
+  mounted() {
+    //发起一级分类请求
+    this.cateRequestList();
+    //发起规格属性请求
+    this.specRequestList();
   }
-
 };
 </script>
 

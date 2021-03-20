@@ -23,7 +23,7 @@ const store = new Vuex.Store({
         manager,
         cate,
         spec,
-        goods
+        goods 
     }
 })
 
